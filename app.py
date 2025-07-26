@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from models import db, Expense
 from datetime import datetime
 import calendar
@@ -6,7 +6,7 @@ from collections import defaultdict
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
-
+app.secret_key = 'supersekretnyklucz'  # ustaw coś losowego i trudnego
 with app.app_context():
     db.create_all()
 
@@ -16,9 +16,21 @@ def get_month_name(month_number):
 
 from collections import defaultdict
 from datetime import datetime, timedelta
+@app.route('/', methods=['GET', 'POST'])
+def welcome():
+    if request.method == 'POST':
+        pin = request.form.get('pin')
+        if pin == '1126':
+            session['authenticated'] = True
+            return redirect('/wydatki')
+        else:
+            return render_template('welcome.html', error="Błędny PIN")
+    return render_template('welcome.html')
 
-@app.route('/')
+@app.route('/wydatki')
 def index():
+    if not session.get('authenticated'):
+        return redirect('/')
     month = request.args.get('month', datetime.now().month, type=int)
     year = request.args.get('year', datetime.now().year, type=int)
 
