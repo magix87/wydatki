@@ -100,6 +100,9 @@ def index():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_expense():
+    if not session.get('authenticated'):
+        return redirect('/')
+
     if request.method == 'POST':
         date_input = request.form['date']
         try:
@@ -120,7 +123,11 @@ def add_expense():
 
     return render_template('add.html')  # <-- TYLKO TO tu zostaje
 @app.route('/edit/<int:expense_id>', methods=['GET', 'POST'])
+
 def edit_expense(expense_id):
+    if not session.get('authenticated'):
+        return redirect('/')
+
     expense = Expense.query.get_or_404(expense_id)
 
     if request.method == 'POST':
