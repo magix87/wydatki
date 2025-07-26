@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wydatki miesięczne</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light text-dark">
+<div class="container my-4">
+    <h1 class="mb-4 text-center fs-2">💸 Twoje Wydatki</h1>
+
+    <!-- Formularz wyboru miesiąca i roku -->
+    <form class="row g-3 mb-4" method="get">
+        {% set month_names = [
+            'Styczeń', 'Luty', 'Marzec', 'Kwiecień', 'Maj', 'Czerwiec',
+            'Lipiec', 'Sierpień', 'Wrzesień', 'Październik', 'Listopad', 'Grudzień'
+        ] %}
+        <div class="col-12 col-sm-4">
+            <select name="month" class="form-select form-select-lg">
+                {% for i in range(1, 13) %}
+                    <option value="{{ i }}" {% if i == month %}selected{% endif %}>
+                        {{ month_names[i - 1] }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-sm-4">
+            <input type="number" name="year" class="form-control form-control-lg" value="{{ year }}" min="2020">
+        </div>
+        <div class="col-12 col-sm-4">
+            <button type="submit" class="btn btn-dark btn-lg w-100">🔄 Pokaż</button>
+        </div>
+    </form>
+
+    <!-- Podsumowanie miesiąca -->
+    <div class="alert alert-info text-center fs-5">
+        <strong>📅 Podsumowanie: {{ month_name }} {{ year }}</strong><br>
+        {{ who_spent_more }}
+    </div>
+
+    <!-- Sumy osobne -->
+    <div class="row mb-4">
+        <div class="col-12 col-md-6 mb-3 mb-md-0">
+            <div class="card shadow-sm border-success">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Adam</h5>
+                    <p class="card-text fs-3 fw-bold">{{ adam_sum }} PLN</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Malwina</h5>
+                    <p class="card-text fs-3 fw-bold">{{ malwina_sum }} PLN</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Łączna suma miesiąca -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body text-center">
+            <h5 class="card-title">📦 Suma wszystkich wydatków</h5>
+            <p class="card-text fs-3 fw-bold">{{ month_total }} PLN</p>
+        </div>
+    </div>
+
+    <!-- Przycisk dodawania -->
+    <div class="text-end mb-3">
+        <a href="/add" class="btn btn-outline-dark btn-lg">➕ Dodaj nowy wydatek</a>
+    </div>
+
+    <!-- Lista wydatków -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h4 class="card-title mb-3 fs-4">Historia wydatków ({{ month_name }} {{ year }})</h4>
+            {% if expenses %}
+            <ul class="list-group list-group-flush">
+                {% for expense in expenses %}
+                <li class="list-group-item py-3">
+                    <div class="text-end mt-2">
+    <a href="/edit/{{ expense.id }}" class="btn btn-sm btn-outline-secondary">✏️ Edytuj</a>
+</div>
+
+                    <div class="d-flex flex-column">
+                        <div class="fs-5">
+                            <strong>{{ expense.date.strftime('%Y-%m-%d') }}</strong> |
+                            <span class="fw-bold text-muted">{{ expense.person }}</span> –
+                            {{ expense.category }}:
+                            <span class="fw-semibold">{{ expense.amount }} PLN</span>
+                        </div>
+                        {% if expense.description %}
+                        <div class="text-muted small mt-1">{{ expense.description }}</div>
+                        {% endif %}
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted fs-5">Brak wydatków w tym miesiącu.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Wykresy na dole strony -->
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title text-center mb-4">📊 Porównanie miesięczne (ostatnie 6 miesięcy)</h5>
+            <canvas id="wydatkiChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+<div class="container my-5">
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title text-center mb-4">🥧 Podział wydatków wg kategorii ({{ month_name }})</h5>
+            <canvas id="kategorieChart" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+
+<!-- Wykres JS -->
+<script>
+const ctx = document.getElementById('wydatkiChart').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {{ chart_labels | tojson }},
+        datasets: [
+            {
+                label: 'Adam',
+                data: {{ chart_adam | tojson }},
+                backgroundColor: 'rgba(54, 162, 235, 0.7)'
+            },
+            {
+                label: 'Malwina',
+                data: {{ chart_malwina | tojson }},
+                backgroundColor: 'rgba(255, 99, 132, 0.7)'
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'top' },
+            title: { display: false }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 10 }
+            }
+        }
+    }
+});
+</script>
+<script>
+const ctx2 = document.getElementById('kategorieChart').getContext('2d');
+const kategorieChart = new Chart(ctx2, {
+    type: 'doughnut',
+    data: {
+        labels: {{ category_labels | tojson }},
+        datasets: [{
+            data: {{ category_values | tojson }},
+            backgroundColor: [
+                '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40', '#b3e283'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { position: 'bottom' },
+            title: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+
+</body>
+</html>

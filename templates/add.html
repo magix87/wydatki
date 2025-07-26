@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dodaj wydatek</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light text-dark">
+<div class="container my-5">
+    <h2 class="mb-4 text-center fs-2">➕ Dodaj nowy wydatek</h2>
+
+    <form method="POST" class="card p-4 shadow-sm">
+        <div class="mb-3">
+            <label for="person" class="form-label fs-5">Osoba</label>
+            <select name="person" class="form-select form-select-lg" id="person" required>
+                <option value="Adam">Adam</option>
+                <option value="Malwina">Malwina</option>
+            </select>
+        </div>
+
+        <select name="category" id="category" class="form-select form-select-lg" required>
+            <option value="Supermarket">Supermarket</option>
+            <option value="Drogeria">Drogeria</option>
+            <option value="Mięsny">Mięsny</option>
+            <option value="Piekarnia">Piekarnia</option>
+            <option value="Mieszkanie">Mieszkanie</option>
+            <option value="Inne">Inne</option>
+        </select>
+
+
+        <div class="mb-3">
+            <label for="amount" class="form-label fs-5">Kwota</label>
+            <input name="amount" type="number" step="0.01" id="amount" class="form-control form-control-lg" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="date" class="form-label fs-5">Data wydatku</label>
+            <input name="date" id="date" type="date" class="form-control form-control-lg" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="description" class="form-label fs-5">Opis (opcjonalny)</label>
+            <input name="description" id="description" class="form-control form-control-lg">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg w-100">💾 Zapisz wydatek</button>
+    </form>
+
+    <div class="mt-4 text-center">
+        <a href="/" class="btn btn-link fs-5">← Wróć do listy wydatków</a>
+    </div>
+</div>
+</body>
+</html>
