@@ -3,10 +3,13 @@ from models import db, Expense
 from datetime import datetime
 import calendar
 from collections import defaultdict
+from collections import defaultdict
+from datetime import datetime, timedelta
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
 app.secret_key = 'supersekretnyklucz'  # ustaw coś losowego i trudnego
+app.permanent_session_lifetime = timedelta(minutes=10)  # ile trwa sesja
 with app.app_context():
     db.create_all()
 
@@ -14,13 +17,13 @@ with app.app_context():
 def get_month_name(month_number):
     return calendar.month_name[month_number]  # np. 7 → "July"
 
-from collections import defaultdict
-from datetime import datetime, timedelta
+
 @app.route('/', methods=['GET', 'POST'])
 def welcome():
     if request.method == 'POST':
         pin = request.form.get('pin')
         if pin == '1126':
+            session.permanent = True  # <-- TO DODAJ
             session['authenticated'] = True
             return redirect('/wydatki')
         else:
