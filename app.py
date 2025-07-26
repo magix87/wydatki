@@ -116,7 +116,7 @@ def add_expense():
         )
         db.session.add(new_expense)
         db.session.commit()
-        return redirect('/')
+        return redirect('/wydatki')
 
     return render_template('add.html')  # <-- TYLKO TO tu zostaje
 @app.route('/edit/<int:expense_id>', methods=['GET', 'POST'])
