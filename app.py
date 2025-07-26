@@ -5,10 +5,13 @@ import calendar
 from collections import defaultdict
 from collections import defaultdict
 from datetime import datetime, timedelta
+import secrets
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db.init_app(app)
-app.secret_key = 'supersekretnyklucz'  # ustaw coś losowego i trudnego
+import secrets
+app.secret_key = secrets.token_hex(16)
+
 app.permanent_session_lifetime = timedelta(minutes=10)  # ile trwa sesja
 with app.app_context():
     db.create_all()
